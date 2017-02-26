@@ -1,45 +1,55 @@
 <?php
 
-	require_once("../database.php");
-	require_once("../models/articles.php");
+	if (!empty($_GET['login']) && !empty($_GET['passwd'])) {
+		if ($_GET['login'] == 'administrator' && $_GET['passwd']  == '15tAi5W2') {
+			require_once("../database.php");
+			require_once("../models/articles.php");
 
-	$link = db_connect();
+			$link = db_connect();
 
-	if (isset($_GET['action'])) {
-		$action = $_GET['action'];
+			if (isset($_GET['action'])) {
+				$action = $_GET['action'];
+			}
+			else {
+				$action = '';
+
+			}
+
+			if ($action == 'add') {
+				if (!empty($_POST)) {
+					articles_new($link, $_POST['title'], $_POST['date'], $_POST['content']);
+					header('Location: index.php?login=administrator&passwd=15tAi5W2');
+				}
+				include ('../views/article_add.php');
+			}
+			elseif ($action == 'edit') {
+				if (!isset($_GET['id']))
+					header('Location: index.php?login=administrator&passwd=15tAi5W2');
+				$id = (int)$_GET['id'];
+
+				if(!empty($_POST) && $id > 0){
+					articles_edit($link, $id, $_POST['title'], $_POST['date'], $_POST['content']);
+					header('Location: index.php?login=administrator&passwd=15tAi5W2');
+				}
+				$article = article_get($link, $id);
+				include('../views/article_admin.php');
+			}
+			elseif ($action == 'delete') {
+				$id = $_GET['id'];
+				$article = articles_delete($link, $id);
+				header('Location: index.php?login=administrator&passwd=15tAi5W2');
+			}
+			else {
+				$articles = articles_all($link);
+				include ('../views/articles_admin.php');
+			}
+		}
+		else {
+			include('../views/passwderr.php');
+		}
 	}
 	else {
-		$action = '';
-
-	}
-
-	if ($action == 'add') {
-		if (!empty($_POST)) {
-			articles_new($link, $_POST['title'], $_POST['date'], $_POST['content']);
-			header('Location: index.php');
-		}
-		include ('../views/article_add.php');
-	}
-	elseif ($action == 'edit') {
-		if (!isset($_GET['id']))
-			header('Location: index.php');
-		$id = (int)$_GET['id'];
-
-		if(!empty($_POST) && $id > 0){
-			articles_edit($link, $id, $_POST['title'], $_POST['date'], $_POST['content']);
-			header('Location: index.php');
-		}
-		$article = article_get($link, $id);
-		include('../views/article_admin.php');
-	}
-	elseif ($action == 'delete') {
-		$id = $_GET['id'];
-		$article = articles_delete($link, $id);
-		header('Location: index.php');
-	}
-	else {
-		$articles = articles_all($link);
-		include ('../views/articles_admin.php');
+		include('../views/notpasswd.php');
 	}
 
 ?>
